@@ -7,10 +7,10 @@ if [ -z "${version}" ]; then
 	sleep 5
 fi
 
-for c in bacula-db bacula-db-data bacula-sd bacula-dir; do
+for c in bacula-db bacula-db-data bacula-sd bacula-dir bacula-fd; do
 	imgname=`echo ${c} | sed 's,^bacula,bacula-opensource,'`
-	docker push redcoolbeans/${imgname}:latest
+	docker push romracer/${imgname}:latest
 	if [ ! -z "${version}" ]; then
-		docker push redcoolbeans/${imgname}:${version}
+		docker push romracer/${imgname}:${version}
 	fi
 done
