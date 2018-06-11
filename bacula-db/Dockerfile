@@ -1,4 +1,4 @@
-FROM postgres:9.2
+FROM postgres:9.6
 
 MAINTAINER "romracer" <romracer@gmail.com>
 LABEL com.baculasystems.bacula.version="7.4.3" \

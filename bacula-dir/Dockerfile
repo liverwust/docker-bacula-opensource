@@ -11,8 +11,10 @@ ENV BACULA_COMPONENTS "bacula-libs bacula-common bacula-libs-sql bacula-client b
 RUN mkdir -p /tmp/bacula
 ADD bacula-common/configs/ /tmp/bacula
 
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+
 RUN yum -q -y update && \
-    yum -q -y install postgresql sudo
+    yum -q -y install postgresql96 sudo
 RUN for b in ${BACULA_COMPONENTS}; do yum -y --nogpgcheck localinstall /tmp/bacula/$b-${BACULA_VERSION}*.rpm; done
 
 RUN sed -i -e "s/Defaults    requiretty.*/ #Defaults    requiretty/g" /etc/sudoers
