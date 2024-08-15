@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright (c) 2015-2016 RedCoolBeans <info@redcoolbeans.com>
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 # Author: J. Lievisse Adriaanse <jasper@redcoolbeans.com>
+# Modifications by: Louis Wust <louiswust@fastmail.fm>
 
 : ${BACULA_DEBUG:="50"}
 : ${DB_USER:="postgres"}
@@ -43,16 +44,8 @@ if [ ! -f /etc/bacula/bacula-fd.conf ]; then
 
   : ${MON_FD_PASSWORD:="${FD_PASSWORD}"}
 
-  CONFIG_VARS=(
-    FD_NAME
-    FD_PASSWORD
-    DIR_NAME
-    MON_NAME
-    MON_FD_PASSWORD
-  )
-
   cp /root/bacula-fd.conf.orig /etc/bacula/bacula-fd.conf && chmod 600 /etc/bacula/bacula-fd.conf
-  for c in ${CONFIG_VARS[@]}; do
+  for c in FD_NAME FD_PASSWORD DIR_NAME MON_NAME MON_FD_PASSWORD; do
     sed -i "s,@@${c}@@,$(eval echo \$$c)," /etc/bacula/bacula-fd.conf
   done
 fi
@@ -60,7 +53,7 @@ fi
 echo "==> Looking for new plugins"
 _plugins=`ls -1 /plugins`
 echo ${_plugins} | grep -q -E '(\.rpm$)'
-if [[ "$?" -eq 0 ]]; then
+if [ "$?" -eq 0 ]; then
   for p in ${_plugins}; do
     yum -q --nogpgcheck localinstall -y /plugins/$p
   done
@@ -97,7 +90,7 @@ fi
 
 # The database setup created the logfile, but bacula-dir running as an unprivileged
 # user cannot append to the logfile anymore.
-[[ -f "${LOG_FILE}" ]] && chown bacula ${LOG_FILE}
+[ -f "${LOG_FILE}" ] && chown bacula ${LOG_FILE}
 
 # Update database information in bacula-dir.conf before we clear environment variables
 sed -r -i -e "s#^\s+dbname.*#  dbname = \"${DB_NAME}\"; dbuser = \"${DB_USER}\"; dbpassword = \"${DB_PASSWORD}\"; dbaddress = \"${DB_HOST}\"#g" /etc/bacula/bacula-dir.conf
@@ -114,5 +107,5 @@ echo "==> Starting Bacula FD"
 echo "==> Starting Bacula DIR"
 chown bacula /var/run
 chown bacula /var/spool/bacula
-[[ -f /etc/bacula/bacula-dir.conf ]] && chown bacula /etc/bacula/bacula-dir.conf
+[ -f /etc/bacula/bacula-dir.conf ] && chown bacula /etc/bacula/bacula-dir.conf
 sudo -u bacula /usr/sbin/bacula-dir -c /etc/bacula/bacula-dir.conf -d ${BACULA_DEBUG} -f

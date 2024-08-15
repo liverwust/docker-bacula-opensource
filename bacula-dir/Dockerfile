@@ -1,26 +1,13 @@
-FROM centos:7
+FROM alpine:3.20.2
 
-MAINTAINER "romracer" <romracer@gmail.com>
-ENV BACULA_VERSION "7.4.3"
+MAINTAINER "Louis Wust" <louiswust@fastmail.fm>
+ENV BACULA_VERSION "13.0.3"
 LABEL com.baculasystems.bacula.version="${BACULA_VERSION}" \
-      com.redcoolbeans.image.version="1.0.1"
+      us.wust.image.version="1.0.2"
 
-ENV BACULA_COMPONENTS "bacula-libs bacula-common bacula-libs-sql bacula-client bacula-director bacula-console"
+ENV BACULA_COMPONENTS "bacula bacula-client bacula-libs bacula-pgsql"
 
-# Install customer's repository information
-RUN mkdir -p /tmp/bacula
-ADD bacula-common/configs/ /tmp/bacula
-
-RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
-
-RUN yum -q -y update && \
-    yum -q -y install postgresql96 sudo
-RUN for b in ${BACULA_COMPONENTS}; do yum -y --nogpgcheck localinstall /tmp/bacula/$b-${BACULA_VERSION}*.rpm; done
-
-RUN sed -i -e "s/Defaults    requiretty.*/ #Defaults    requiretty/g" /etc/sudoers
-
-# Cleanup caches and repository information
-RUN yum clean all; rm -rf /tmp/bacula
+RUN for b in ${BACULA_COMPONENTS}; do apk add $b; done
 
 # Add and save a copy of the FD config file. We'll populate it first boot.
 ADD bacula-fd/configs/bacula-fd.conf /root/bacula-fd.conf.orig
